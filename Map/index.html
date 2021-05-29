@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>First map using leaflet</title>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+            integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+            crossorigin=""/>
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+            integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+            crossorigin=""></script>
+        <script type = "text/javascript" src="geoJson.js"></script>
+    </head>
+    <body>
+        <div id="map" style="width: 1200px; height: 800px;"></div>
+        <script>
+            var mymap = L.map('map').setView([57.5345, 25.4182], 15);
+            var httpLink = 'https://dpps.viss.gov.lv/DPPS.REQ/URN_IVIS_100001_ISS-VIDM-WMS_ATR_02022021-v1-0/guest/URN_IVIS_100273_LIC-EB3E6FD85096D1489BACDA09E746CFC3?';
+            var httpLink2 = 'http://services.lgia.gov.lv/arcfree/services/WMS_Ortofoto_v1/MapServer/WMSServer?';
+            var httpLink3 = 'https://dpps.viss.gov.lv/DPPS.REQ/URN_IVIS_100001_ISS-VIDM-MSP02_WMS_service-v1-0/guest/URN_IVIS_100273_LIC-E11898390C6DE34093A919985326EA8A?request=GetCapabilities&service=WMS';
+            var httpLink4 = 'https://dpps.viss.gov.lv/DPPS.REQ/URN_IVIS_100001_ISS-VIDM-MSP01_WMS_service-v1-0/guest/URN_IVIS_100273_LIC-A8CCB748FAF00740895E37FD86C7C5C8?';
+
+            L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                maxZoom: 18,
+                id: 'mapbox/streets-v11',
+                tileSize: 512,
+                zoomOffset: -1,
+            }).addTo(mymap);
+
+            var marker = L.marker([57.54175, 25.42843]).addTo(mymap);
+            marker.bindPopup("<b>Popup</b>")
+
+            var circle = L.circle([57.52663, 25.38474], {
+                color: 'red',
+                fillColor: '#f03',
+                fillOpacity: 0.5,
+                radius: 500
+            })
+            circle.bindPopup("Valmiera radio tower");
+
+            var wmsLayer = L.tileLayer.wms(httpLink, {
+                layers: '0',
+                format: 'image/png8',
+                transparent: 'true'
+            })
+
+
+            var ortofoto_layer = L.tileLayer.wms(httpLink2, {
+                layers: '0',
+                format: 'image/png'
+            })
+
+            var sea_layer = L.tileLayer.wms(httpLink4, {
+                layers: '0',
+                format: 'image/png',
+                transparent: 'true'
+            })
+
+            var basemaps = {
+                OSM: wmsLayer,
+                ORTOFOTO: ortofoto_layer,
+                SEA: sea_layer
+            };
+
+            L.control.layers(basemaps).addTo(mymap);
+
+            basemaps.Topography.addTo(mymap);
+
+            function onMapClick(e) {
+                alert("You clicked the map at " + e.latlng.toString());
+            }
+
+            mymap.on('click', onMapClick);
+
+            function onEachFeature(feature, layer) {
+                if (feature.properties && feature.properties.Name) {
+                    layer.bindPopup("Name of the park: "+ feature.properties.Name);
+                }
+            }
+            L.geoJSON(parks, {
+                onEachFeature:onEachFeature
+            }).addTo(mymap);
+        </script>
+    </body>
+</html>
